@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+
+{% if items %}
+<table class="w-full border-collapse border">
+    <thead>
+        <tr class="bg-gray-100 border-b">
+            <th class="p-2 text-left">Product</th>
+            <th class="p-2">Quantity</th>
+            <th class="p-2">Price</th>
+            <th class="p-2">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr class="border-b">
+            <td class="p-2">{{ item.product.name|truncatechars:20 }}</td>
+            <td class="p-2 flex items-center justify-center gap-2">
+                <button class="decrease bg-gray-200 px-2 py-1 rounded" data-id="{{ item.id }}">-</button>
+                <span id="quantity-{{ item.id }}" class="px-2">{{ item.quantity }}</span>
+                <button class="increase bg-gray-200 px-2 py-1 rounded" data-id="{{ item.id }}">+</button>
+            </td>
+            <td class="p-2">₹{{ item.product.price|floatformat:2 }}</td>
+            <td class="p-2">
+                <a href="{% url 'remove_item' item.id %}" class="text-red-500 hover:underline">Remove</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p class="text-center text-gray-500 mt-6">Your cart is empty.</p>
+{% endif %}
+
+<script>
+document.querySelectorAll('.increase, .decrease').forEach(btn => {
+    btn.addEventListener('click', function(e){
+        e.preventDefault();
+        const id = this.dataset.id;
+        const action = this.classList.contains('increase') ? 'increase' : 'decrease';
+
+        fetch(`/cart/update/${id}/${action}/`, {
+            method: 'GET',
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(res => res.json())
+        .then(data => {
+            const qtySpan = document.getElementById(`quantity-${id}`);
+            if(data.deleted){
+                // Remove row visually
+                qtySpan.closest('tr').remove();
+            } else {
+                qtySpan.textContent = data.quantity;
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Ecommerce</title>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-green-400 p-4 shadow flex justify-between md:px-30">
+        <a href="/" class="fon-bold">Ecommerce</a>
+
+        <form method="GET" action="{% url 'product_search' %}">
+            <input type="text" name="q" placeholder="Search..." class='border px-2'>
+        </form>
+
+        <div>
+            {% if user.is_authenticated %}
+            Hello, {{user.first_name}}
+            <a href="{% url 'logout'%}" class="bg-red-500 text-white px-2 py-1 rounded-xl">Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="bg-red-500 text-white px-2 py-1 rounded-xl">Login</a>
+            <a href="{% url 'signup' %}" class="ml-2" class="bg-red-500 text-white px-2 py-1 rounded-xl">Signup</a>
+            {% endif %}
+            <a href="{% url 'cart' %}" class="bg-blue-500 text-white px-2 py-1 rounded-xl relative">Cart
+                {% if cart_count > 0 %}
+                 <span class="absolute top-0 right-0 inline-block w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full text-center">
+                    {{cart_count}}
+                 </span>
+                {% endif %}
+            </a>
+        </div>
+    </nav>
+
+    <div class="p-6">
+        {% block content %}{% endblock %}
+    </div>
+    
+
+    <script>
+document.querySelectorAll('.add-to-cart').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const productId = this.dataset.productId;
+
+        fetch(`/cart/add/${productId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Update button text
+                this.textContent = `Added (${data.product_quantity})`;
+                // Update cart count in navbar
+                const cartBadge = document.querySelector('a[href="/cart/"] span');
+                if(cartBadge){
+                    cartBadge.textContent = data.cart_count;
+                } else {
+                    // If span doesn't exist, create it
+                    const span = document.createElement('span');
+                    span.className = "absolute top-0 right-0 inline-block w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full text-center";
+                    span.textContent = data.cart_count;
+                    document.querySelector('a[href="/cart/"]').appendChild(span);
+                }
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
