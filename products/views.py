@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product
 from cart.models import CartItem
+from django.db.models import Q
 
 def home(request):
     products = Product.objects.all()[:8]
@@ -17,9 +18,19 @@ def home(request):
     })
 
 def product_search(request):
-    query = request.GET.get('q')
-    products = Product.objects.filter(name__icontains=query)
-    return render(request, 'search.html', {'products': products})
+    query = request.GET.get('q').strip()
+
+    products = []
+    if query:
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(category__name__icontains=query) 
+        )
+
+    return render(request, 'search.html', {
+        'products': products,
+        'query': query
+        })
 
 def product_detail(request, id):
     product = get_object_or_404(Product, id=id)

@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="text-xl mb-4">Products</h2>
+<h2 class="text-xl text-center">Products</h2>
 
-<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
     {% for product in products %}
-    <div class="bg-white border rounded-lg p-2 shadow relative">
-        <a href="{% url 'product_detail' product.id %}">
-            <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="h-40 w-full object-cover">
-            <h3 class="font-semibold text-gray-800 text-sm">{{ product.name|truncatewords:10 }}</h3>
-            <p class="text-black">Rs.{{ product.price }}</p>
+    <div class="bg-white rounded-lg shadow-lg h-[420px] md:h-[440px] relative">
+        <a href="{% url 'product_detail' product.id %}" class-"flex flex-cols items-center justify-center w-[180px]">
+            <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="aspect-ratio-3/4 h-[300px] ">
+            <h3 class="text-gray-700 text-xs px-2 line-clamp-3 md:text-sm">{{ product.name }}</h3>
+            <p class="font-semibold text-black mt-1 px-2 text-sm md:text-lg">Rs.{{ product.price }}</p>
         </a>
 
         {% if request.user.is_authenticated %}
-        <div class="mt-2 flex items-center gap-2">
-            <button class="decrease bg-gray-200 px-2 py-1 rounded" data-id="{{ product.id }}">-</button>
+        <div class="absolute bottom-0 w-full bg-green-700 text-white flex justify-evenly items-center">
+            <button class="bg-green-500 px-3 py-1 text-lg font-bold rounded" data-id="{{ product.id }}">-</button>
             <span id="product-quantity-{{ product.id }}">
                 {% if cart_quantities.product.id %}
                     {{ cart_quantities.product.id }}
@@ -21,10 +21,10 @@
                     0
                 {% endif %}
             </span>
-            <button class="increase bg-gray-200 px-2 py-1 rounded" data-id="{{ product.id }}">+</button>
+            <button class="bg-green-500 px-3 py-1 text-lg font-bold rounded" data-id="{{ product.id }}">+</button>
         </div>
         {% else %}
-            <a href="{% url 'login' %}" class="bg-blue-600 text-white px-2 py-1 text-sm rounded absolute bottom-2 right-2">
+            <a href="{% url 'login' %}" class="bg-blue-600 w-full text-white px-2 py-1 text-sm rounded absolute bottom-0 text-center">
                 Login to Add
             </a>
         {% endif %}
@@ -32,34 +32,5 @@
     {% endfor %}
 </div>
 
-<script>
-// AJAX Add / Increase / Decrease
-document.querySelectorAll('.increase, .decrease').forEach(btn => {
-    btn.addEventListener('click', function(e){
-        e.preventDefault();
-        const productId = this.dataset.id;
-        const action = this.classList.contains('increase') ? 'increase' : 'decrease';
 
-        fetch(`/cart/update_product/${productId}/${action}/`, {
-            method: 'GET',
-            headers: {'X-Requested-With': 'XMLHttpRequest'}
-        })
-        .then(res => res.json())
-        .then(data => {
-            const qtySpan = document.getElementById(`product-quantity-${productId}`);
-            if(data.deleted){
-                qtySpan.textContent = 0;
-            } else {
-                qtySpan.textContent = data.quantity;
-            }
-
-            // Update navbar cart count
-            const cartBadge = document.querySelector('a[href="/cart/"] span');
-            if(cartBadge){
-                cartBadge.textContent = data.cart_count;
-            }
-        });
-    });
-});
-</script>
 {% endblock %}

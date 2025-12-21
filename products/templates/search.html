@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="text-lg font-semibold mb-4 text-center">
+    Search Results for "{{query}}"
+</h2>
+
+{% if products %}
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    {% for product in products %}
+    <div class="bg-white shadow rounded p-2">
+        <a href="{% url 'product_detail' product.id%}">
+            <img src="{{product.main_image.url}}" alt="{{product.name}}"
+            class="aspect-ratio-3/4 rounded"
+            >
+            <h3 class="text-sm mt-2">{{product.name}}</h3>
+            <p class="font-semibold">Rs. {{product.price}}</p>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-red-600 text-center">No Product Found</p>
+{% endif %}
+{% endblock %}
