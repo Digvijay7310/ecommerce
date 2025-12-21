@@ -1,56 +1,42 @@
-from django.shortcuts import redirect, get_object_or_404, render
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import CartItem
 from products.models import Product
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-
-@login_required(login_url='/accounts/login/')
-def add_to_cart(request, id):
-    product = get_object_or_404(Product, id=id)
-    # Increment quantity if already exists
-    item, created = CartItem.objects.get_or_create(user=request.user, product=product)
-    if not created:
-        item.quantity += 1
-        item.save()
-    else:
-        item.quantity = 1
-        item.save()
-
-    cart_count = CartItem.objects.filter(user=request.user).count()
-    return JsonResponse({
-        'success': True,
-        'cart_count': cart_count,
-        'product_quantity': item.quantity
-    })
-
-   
-@login_required(login_url='/accounts/login/')
-def cart_view(request):
-    items = CartItem.objects.filter(user=request.user)
-
-    for item in items:
-        item.total_price = item.product.price * item.quantity
-    return render(request, 'cart.html', {'items': items})
 
 @login_required
-def update_cart_item(request, id, action):
+def add_to_cart(request, id):
+    product = get_object_or_404(Product, id=id)
+    cart_item, created = CartItem.objects.get_or_create(user=request.user, product=product)
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+@login_required
+def increase_quantity(request, id):
     item = get_object_or_404(CartItem, id=id, user=request.user)
-    if action == 'increase':
-        item.quantity += 1
-        item.save()
-    elif action == 'decrease' and item.quantity > 1:
+    item.quantity += 1
+    item.save()
+    return redirect('cart')
+
+@login_required
+def decrease_quantity(request, id):
+    item = get_object_or_404(CartItem, id=id, user=request.user)
+    if item.quantity > 1:
         item.quantity -= 1
         item.save()
-    elif action == 'decrease' and item.quantity == 1:
+    else:
         item.delete()
-        return JsonResponse({'success': True, 'deleted': True})
+    return redirect('cart')
 
-    return JsonResponse({'success': True, 'quantity': item.quantity})
-
-
-
-@login_required(login_url='/accounts/login/')
+@login_required
 def remove_item(request, id):
     item = get_object_or_404(CartItem, id=id, user=request.user)
     item.delete()
     return redirect('cart')
+
+@login_required
+def cart_view(request):
+    items = CartItem.objects.filter(user=request.user)
+    total = sum(item.total_price() for item in items)
+    return render(request, 'cart.html', {'items': items, 'total': total})
