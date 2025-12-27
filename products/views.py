@@ -43,21 +43,7 @@ def product_detail(request, id):
     return render(request, 'product_detail.html', {'product': product})
 
 
-@login_required(login_url='/accounts/login/')
-def add_to_cart(request, id):
-    product = get_object_or_404(Product, id=id)
-    item, created = CartItem.objects.get_or_create(user=request.user, product=product)
-    if not created:
-        item.quantity += 1
-        item.save()
-    else:
-        item.quantity = 1
-        item.save()
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
 
-
-@login_required(login_url='/accounts/login/')
-def remove_from_cart(request, id):
     item = get_object_or_404(CartItem, id=id, user=request.user)
     item.delete()
     return redirect(request.META.get('HTTP_REFERER', 'cart'))

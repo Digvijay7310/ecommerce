@@ -36,7 +36,7 @@
             <a href="{% url 'login' %}" class="bg-green-400 text-white px-2 py-1 rounded hover:cursor-pointer hover:bg-green-500 text-[12px] md:text-sm">Login</a>
             <a href="{% url 'signup' %}" class="bg-red-500 text-white px-2 py-1 rounded hover:cursor-pointer hover:bg-red-600 text-[12px] md:text-sm">Signup</a>
             {% endif %}
-            <a href="{% url 'cart' %}" class="bg-blue-500 text-white px-2 py-1 rounded hover:cursor-pointer hover:bg-blue-600 text-[12px] flex flex-col md:text-sm relative">
+            <a href="{% url 'cart:cart' %}" class="bg-blue-500 text-white px-2 py-1 rounded hover:cursor-pointer hover:bg-blue-600 text-[12px] flex flex-col md:text-sm relative">
                 
                 Cart
                 {% if cart_count > 0 %}

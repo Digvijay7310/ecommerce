@@ -26,7 +26,8 @@
       {% with qty=0 %}
         {% for item in cart_items %}
           {% if item.product.id == product.id %}
-            {% with qty=item.quantity %}{% endwith %}
+            {% with qty=item.quantity %}
+            {% endwith %}
           {% endif %}
         {% endfor %}
 
@@ -35,7 +36,7 @@
             In Cart: {{ qty }}
           </div>
         {% else %}
-          <a href="{% url 'add_to_cart' product.id %}"
+          <a href="{% url 'cart:add_to_cart' product.id %}"
              class="block mt-2 bg-green-700 text-white text-center py-2 rounded">
             Add to Cart
           </a>
@@ -47,4 +48,5 @@
 {% endfor %}
 
 </div>
+
 {% endblock %}

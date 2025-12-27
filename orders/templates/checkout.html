@@ -1,48 +1,58 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="max-w-6xl mx-auto my-10 px-4">
-    <h2 class="text-3xl font-bold text-center mb-8">Checkout</h2>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold mb-4">Your Details</h3>
-            <form method="POST" class="flex flex-col gap-4">
-                {% csrf_token %}
+<h2 class="text-2xl font-bold mb-6 text-center">Checkout</h2>
 
-                <input class="w-full border-2 border-green-700 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm md:text-lg" 
-                       type="text" name="full_name" value="{{ user.get_full_name }}" placeholder="Full Name" required> 
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <input class="w-full border-2 border-green-700 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm md:text-lg" 
-                       type="email" name="email" value="{{ user.email }}" placeholder="Email" required> 
+  <!-- LEFT: CART ITEMS -->
+  <div class="lg:col-span-2 bg-white shadow rounded p-4">
+    <h3 class="text-lg font-semibold mb-4">Your Items</h3>
 
-                <input class="w-full border-2 border-green-700 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm md:text-lg" 
-                       type="text" name="phone" placeholder="Phone Number" required> 
-
-                <textarea class="w-full border-2 border-green-700 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm md:text-lg" 
-                          name="address" placeholder="Address" required></textarea>
-
-                <input class="w-full border-2 border-green-700 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm md:text-lg" 
-                       type="text" name="city" placeholder="City" required>
-
-                <input class="w-full border-2 border-green-700 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm md:text-lg" 
-                       type="text" name="pincode" placeholder="Pincode" required>
-
-                <select class="w-full border-2 border-green-700 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm md:text-lg" 
-                        name="payment_method">
-                    <option value="COD">Cash On Delivery</option>
-                    <option value="CARD">Card (Coming Soon)</option>
-                    <option value="UPI">UPI (Coming Soon)</option>
-                </select>
-
-                <a href="{{url 'orders:order_success'}}">
-                    <button class="w-full bg-green-700 text-white py-2 px-4 rounded font-semibold hover:bg-green-800 transition duration-300" type="submit">
-                    Place Order
-                </button>
-                </a>
-            </form>
-        </div>
-
-
+    {% for item in items %}
+    <div class="flex items-center gap-4 border-b py-3">
+      <img src="{{ item.product.main_image.url }}" 
+           alt="{{ item.product.name }}" class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded">
+      <div class="flex-1">
+        <p class="font-semibold text-sm sm:text-base">{{ item.product.name }}</p>
+        <p class="text-xs sm:text-sm text-gray-600">Quantity: {{ item.quantity }}</p>
+      </div>
+      <div class="font-semibold text-sm sm:text-base">₹{{ item.total_price }}</div>
     </div>
+    {% endfor %}
+  </div>
+
+  <!-- RIGHT: ORDER SUMMARY -->
+  <div class="bg-white shadow rounded p-4 h-fit">
+    <h3 class="text-lg font-semibold mb-4">Order Summary</h3>
+
+    <p class="flex justify-between mb-2">
+      <span>Total Amount</span>
+      <span class="font-bold">₹{{ total }}</span>
+    </p>
+
+    <p class="mb-3 text-sm">
+      <span class="font-semibold">Payment:</span>
+      <span class="text-green-700">Cash on Delivery</span>
+    </p>
+
+    <form method="post" action="{% url 'orders:checkout' %}">
+      {% csrf_token %}
+      <label class="block text-sm font-semibold mb-1">Phone</label>
+      <input type="text" name="phone" required
+             class="w-full border rounded p-2 mb-3 outline-none focus:ring-2 focus:ring-green-500">
+      
+      <label class="block text-sm font-semibold mb-1">Delivery Address</label>
+      <textarea name="address" required
+                class="w-full border rounded p-2 mb-4">{{ profile.address }}, {{ profile.city }} - {{ profile.pincode }}</textarea>
+
+      <button type="submit"
+              class="w-full bg-green-700 hover:bg-green-800 text-white py-2 rounded font-semibold">
+        Place Order
+      </button>
+    </form>
+  </div>
+
 </div>
+
 {% endblock %}

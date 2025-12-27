@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import CartItem
+from cart.models import CartItem
 from products.models import Product
 from django.contrib.auth.decorators import login_required
 
@@ -17,7 +17,7 @@ def increase_quantity(request, id):
     item = get_object_or_404(CartItem, id=id, user=request.user)
     item.quantity += 1
     item.save()
-    return redirect('cart')
+    return redirect('cart:cart')
 
 @login_required
 def decrease_quantity(request, id):
@@ -27,16 +27,27 @@ def decrease_quantity(request, id):
         item.save()
     else:
         item.delete()
-    return redirect('cart')
+    return redirect('cart:cart')
 
 @login_required
 def remove_item(request, id):
     item = get_object_or_404(CartItem, id=id, user=request.user)
     item.delete()
-    return redirect('cart')
+    return redirect('cart:cart')
 
 @login_required
 def cart_view(request):
     items = CartItem.objects.filter(user=request.user)
     total = sum(item.total_price() for item in items)
     return render(request, 'cart.html', {'items': items, 'total': total})
+
+
+@login_required
+def checkout(request):
+    items = CartItem.objects.filter(user=request.user)
+    total = sum(item.total_price() for item in items)
+
+    return render(request, 'checkout.html', {
+        'items': items,
+        'total': total
+    })
